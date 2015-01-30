@@ -1,0 +1,94 @@
+<html>
+<head>
+    <title>Login Tests</title>
+
+    <!-- Bring in jQuery and other dependencies -->
+    <script type="text/javascript" src="/modules/infusion/src/lib/jquery/core/js/jquery.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/lib/jquery/ui/js/jquery.ui.core.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/lib/json/js/json2.js"></script>
+
+    <!-- Bring in fluid dependencies -->
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/FluidDocument.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/Fluid.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/FluidDOMUtilities.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/FluidIoC.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/DataBinding.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/FluidView.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/lib/fastXmlPull/js/fastXmlPull.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/renderer/js/fluidParser.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/renderer/js/fluidRenderer.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/FluidRequests.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/ModelTransformation.js"></script>
+    <script type="text/javascript" src="/modules/infusion/src/framework/core/js/ModelTransformationTransforms.js"></script>
+
+    <!-- Bring in Handlebars dependency -->
+    <script type="text/javascript" src="/bc/handlebars/handlebars.js"></script>
+
+    <!-- Bring in Pagedown dependency -->
+    <script type="text/javascript" src="/bc/pagedown/Markdown.Converter.js"></script>
+    <script type="text/javascript" src="/bc/pagedown/Markdown.Sanitizer.js"></script>
+
+
+    <!-- Bring in template handling -->
+    <script type="text/javascript" src="/modules/fluid-handlebars-helper/src/js/common/helpers.js"></script>
+    <script type="text/javascript" src="/modules/fluid-handlebars-helper/src/js/client/helpers-client.js"></script>
+
+    <!-- Bring in client library being tested -->
+    <script type="text/javascript" src="/js/client/login.js"></script>
+
+    <!-- Bring in our jqUnit dependencies -->
+    <script type="text/javascript" src="/modules/infusion/tests/lib/qunit/js/qunit.js"></script>
+    <script type="text/javascript" src="/modules/infusion/tests/test-core/jqUnit/js/jqUnit.js"></script>
+    <script type="text/javascript" src="/modules/infusion/tests/test-core/jqUnit/js/jqUnit-browser.js"></script>
+</head>
+<body>
+<h1 id="qunit-header">Login Tests for GPII Express Couchuser Frontend</h1>
+<h2 id="qunit-banner"></h2>
+<div id="qunit-testrunner-toolbar"></div>
+<h2 id="qunit-userAgent"></h2>
+<ol id="qunit-tests"></ol>
+<div id="qunit-fixture">
+    <!-- Sample login form with all required markup -->
+
+    <div class="column small-offset-4 small-4 login-viewport">
+        <div class="login-viewport">
+            <p>Please enter your username and password to log in.</p>
+
+            <form class="login-form" method="POST">
+                <label for="username">Username:</label>
+                <input id="username" type="text" tabindex="1" name="username" placeholder="Enter your username...">
+
+                <label for="password">Password:</label>
+                <input id="password" type="password" tabindex="2" name="password">
+
+                <input type="submit" tabindex="3" class="login-button" value="Log In">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- configure and instantiate our module -->
+<script type="text/javascript">
+    // TODO:  Provide a module that looks up the user's status using /api/user/current
+    fluid.defaults("gpii.data", {
+        gradeNames: ["fluid.modelRelayComponent", "autoInit"],
+        model: {
+        }
+    });
+    var login = gpii.express.couchuser.frontend.login("body", {
+        model: {
+
+        },
+        components: {
+            templates: {
+                options: {
+                    model: {
+                        "templateUrl": "/hbs"
+                    }
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "gpii-express-couchuser",
+  "version": "0.0.0",
+  "description": "A series of fluid components that interact with express-couchUser to provide user management widgets.  Also provides a router module to mount express-couchuser.",
+  "main": "",
+  "scripts": {
+    "test": "src/tests/js/all-tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/the-t-in-rtf/gpii-express-couchuser"
+  },
+  "author": "Tony Atkins <tony@raisingthefloor.org>",
+  "license": "See LICENSE file for details.",
+  "dependencies": {
+    "infusion":       "git://github.com/fluid-project/infusion.git#605b0bcfaedf6193c31456236d3aa4e42cf36a96",
+    "gpii-hb-helper": "git://github.com/the-t-in-rtf/gpii-hb-helper.git",
+    "express-user-couchdb": "0.3.4"
+  },
+  "devDependencies": {
+    "email-templates":      "1.1.2",
+    "gpii-express":         "git://github.com/the-t-in-rtf/gpii-express",
+    "gpii-pouch":           "git://github.com/the-t-in-rtf/gpii-pouch",
+    "jqUnit":               "git://github.com/fluid-project/node-jqUnit.git#e9bf72445bd343a4f3aabe3ba96a1087d3498612",
+    "request":              "2.51.0"
+  }
+}
