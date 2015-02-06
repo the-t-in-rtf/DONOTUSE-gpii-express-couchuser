@@ -13,23 +13,6 @@ var request    = require("request");
 var jqUnit     = fluid.require("jqUnit");
 var fs         = require("fs");
 
-require("../../../node_modules/gpii-express/src/js/helper");
-require("../../../node_modules/gpii-express/src/js/express");
-require("../../../node_modules/gpii-express/src/js/router");
-require("../../../node_modules/gpii-express/src/js/static");
-require("../../../node_modules/gpii-express/src/js/middleware");
-require("../../../node_modules/gpii-express/src/js/bodyparser");
-require("../../../node_modules/gpii-express/src/js/cookieparser");
-require("../../../node_modules/gpii-express/src/js/session");
-require("../../../node_modules/gpii-hb-helper/src/js/common/helpers");
-require("../../../node_modules/gpii-hb-helper/src/js/server/dispatcher");
-require("../../../node_modules/gpii-hb-helper/src/js/server/helpers-server");
-require("../../../node_modules/gpii-hb-helper/src/js/server/inline");
-require("../../../node_modules/gpii-pouch/src/js/pouch");
-require("../../../node_modules/gpii-test-mail/src/js/mailserver");
-
-require("../../js/server");
-
 function isSaneResponse(jqUnit, error, response, body, statusCode) {
     var statusCode = statusCode ? statusCode : 200;
 
@@ -40,137 +23,9 @@ function isSaneResponse(jqUnit, error, response, body, statusCode) {
     jqUnit.assertNotNull("There should be a body.", body);
 };
 
+require("./test-harness.js");
 
-var mailTemplateDir = path.join(__dirname, '../../js/server/templates');
-
-var viewDir      = path.resolve(__dirname, "../views");
-var modulesDir   = path.resolve(__dirname, "../../../node_modules");
-var jsDir        = path.resolve(__dirname, "../../js");
-var bowerDir     = path.resolve(__dirname, "../../../bower_components");
-
-var mailServer = gpii.test.mail.smtp({
-    "config": { "port": 4025 }
-});
-mailServer.listen();
-
-var express = gpii.express({
-    "config": {
-        "express": {
-            "port" :   7533,
-            "baseUrl": "http://localhost:7533/",
-            "views":   viewDir,
-            "session": {
-                "secret": "Printer, printer take a hint-ter."
-            }
-        },
-        "app": {
-            "name": "GPII Express Couchuser Test Server",
-            "url": "http://localhost:7533/"
-        },
-        "users": "http://localhost:5984/_users",
-        request_defaults: {
-            auth: {
-                user: 'admin',
-                pass: 'admin'
-            }
-        },
-        "email":  {
-            "from": "no-reply@ul.gpii.net",
-            "service": "SMTP",
-            "SMTP": {
-                "host": "localhost",
-                "port": 4025
-            },
-            "templateDir": mailTemplateDir
-        },
-        "verify": true,
-        "safeUserFields": "name email displayName",
-        "adminRoles": [ "admin"]
-    },
-    components: {
-        "bodyparser": {
-            "type": "gpii.express.middleware.bodyparser"
-        },
-        "cookieparser": {
-            "type": "gpii.express.middleware.cookieparser"
-        },
-        "session": {
-            "type": "gpii.express.middleware.session"
-        },
-        "user": {
-            "type": "gpii.express.couchuser.server"
-        },
-        "dispatcher": {
-            "type": "gpii.express.hb.dispatcher",
-            "options": {
-                path: "/content"
-            }
-        },
-        "handlebars": {
-            "type":  "gpii.express.hb.inline",
-            "options": {
-                path: "/hbs"
-            }
-        },
-        "modules": {
-            "type":  "gpii.express.router.static",
-            "options": {
-                path:    "/modules",
-                content: modulesDir
-            }
-        },
-        "js": {
-            "type":  "gpii.express.router.static",
-            "options": {
-                path:    "/js",
-                content: jsDir
-            }
-        },
-        "bc": {
-            "type":  "gpii.express.router.static",
-            "options": {
-                path:    "/bc",
-                content: bowerDir
-            }
-        }
-    }
-});
-
-// TODO:  Figure out why our pouch instance doesn't work with express-couchuser
-//For now, we use our local couch instance directly.
-var userDataFile = path.resolve(__dirname, "../data/users/users.json");
-
-// We have to have a separate pouch instance because bodyparser breaks express-pouch.
-//var pouch = gpii.express({
-//    "config": {
-//        "express": {
-//            "port" :   7534,
-//            "baseUrl": "http://localhost:7534/"
-//        },
-//        "app": {
-//            "name": "Pouch Test Server",
-//            "url": "http://localhost:7534/"
-//        }
-//    },
-//    components: {
-//        "pouch": {
-//            "type": "gpii.pouch",
-//            "options": {
-//                "path": "/",
-//                "model": {
-//                    "databases": {
-//                        "_users": {
-//                            "data": userDataFile
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//});
-
-
-express.start(function(){
+function runTests() {
     jqUnit.module("Testing /api/user directly (no client side code)...");
 
     jqUnit.asyncTest("Testing full login/logout cycle...", function() {
@@ -178,7 +33,7 @@ express.start(function(){
         var username = "admin";
         var password = "admin";
         var loginOptions = {
-            "url":     express.options.config.express.baseUrl + "api/user/signin",
+            "url":     harness.express.options.config.express.baseUrl + "api/user/signin",
             "json":    { "name": username, "password": password },
             "jar":     jar
         };
@@ -196,7 +51,7 @@ express.start(function(){
 
             jqUnit.stop();
             var checkCurrentOptions = {
-                "url":  express.options.config.express.baseUrl + "api/user/current",
+                "url":  harness.express.options.config.express.baseUrl + "api/user/current",
                 "jar":  jar
             };
             request.get(checkCurrentOptions, function(error, response, body){
@@ -213,7 +68,7 @@ express.start(function(){
 
                 jqUnit.stop();
                 var logoutOptions = {
-                    "url":  express.options.config.express.baseUrl + "api/user/signout",
+                    "url":  harness.express.options.config.express.baseUrl + "api/user/signout",
                     "jar":  jar
                 };
                 request.post(logoutOptions, function(error, response,body){
@@ -246,7 +101,7 @@ express.start(function(){
     jqUnit.asyncTest("Testing logging in with a bogus username/password...", function() {
         var jar = request.jar();
         var loginOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/signin",
+            "url": harness.express.options.config.express.baseUrl + "api/user/signin",
             "json": {"name": "bogus", "password": "bogus"},
             "jar": jar
         };
@@ -264,7 +119,7 @@ express.start(function(){
     jqUnit.asyncTest("Testing logging in with an unverified username...", function() {
         var jar = request.jar();
         var loginOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/signin",
+            "url": harness.express.options.config.express.baseUrl + "api/user/signin",
             "json": {"name": "unverified", "password": "unverified"},
             "jar": jar
         };
@@ -282,7 +137,7 @@ express.start(function(){
     jqUnit.asyncTest("Testing creating and verifying a user with the same email address as an existing user...", function() {
         var jar = request.jar();
         var signupOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/signup",
+            "url": harness.express.options.config.express.baseUrl + "api/user/signup",
             "json": {
                 "name":     "new",
                 "password": "new",
@@ -309,7 +164,7 @@ express.start(function(){
         var password  = "password-" + timestamp;
         var email     = username + "@localhost";
 
-        mailServer.applier.change("mailHandler", function(that, connection) {
+        harness.smtp.applier.change("mailHandler", function(that, connection) {
             var content = fs.readFileSync(that.model.messageFile);
 
             // Get the verification code and continue the verification process
@@ -322,7 +177,7 @@ express.start(function(){
 
                 var verifyRequest = request.defaults({timeout: 500});
                 var verifyOptions = {
-                    "url": express.options.config.express.baseUrl + "api/user/verify/" + code
+                    "url": harness.express.options.config.express.baseUrl + "api/user/verify/" + code
                 };
 
                 verifyRequest.get(verifyOptions, function (error, response, body) {
@@ -335,7 +190,7 @@ express.start(function(){
 
                     var loginRequest = request.defaults({timeout: 500});
                     var loginOptions = {
-                        "url": express.options.config.express.baseUrl + "api/user/signin",
+                        "url": harness.express.options.config.express.baseUrl + "api/user/signin",
                         "json": {"name": username, "password": password}
                     };
 
@@ -354,7 +209,7 @@ express.start(function(){
         // Start the signup process now that we have a working mail server...
         var signupRequest = require("request");
         var signupOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/signup",
+            "url": harness.express.options.config.express.baseUrl + "api/user/signup",
             "json": {
                 "name":     username,
                 "password": password,
@@ -375,7 +230,7 @@ express.start(function(){
     jqUnit.asyncTest("Testing creating a user without providing the required information...", function() {
         var jar = request.jar();
         var signupOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/signup",
+            "url": harness.express.options.config.express.baseUrl + "api/user/signup",
             "json": {},
             "jar": jar
         };
@@ -392,7 +247,7 @@ express.start(function(){
     jqUnit.asyncTest("Testing using a bogus verification code...", function() {
         var jar = request.jar();
         var signupOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/verify/xxxxxxxxxx",
+            "url": harness.express.options.config.express.baseUrl + "api/user/verify/xxxxxxxxxx",
             "json": {},
             "jar": jar
         };
@@ -413,7 +268,7 @@ express.start(function(){
         var newPassword  = "reset";
         var email        = username + "@localhost";
 
-        mailServer.applier.change("mailHandler", function(that, connection) {
+        harness.smtp.applier.change("mailHandler", function(that, connection) {
             var content = fs.readFileSync(that.model.messageFile);
 
             // Get the reset code and continue the reset process
@@ -426,7 +281,7 @@ express.start(function(){
 
                 var resetRequest = request.defaults({ timeout: 500});
                 var resetOptions = {
-                    "url": express.options.config.express.baseUrl + "api/user/reset/",
+                    "url": harness.express.options.config.express.baseUrl + "api/user/reset/",
                     "json": {
                         "code":     code,
                         "password": newPassword
@@ -443,7 +298,7 @@ express.start(function(){
 
                     var loginRequest = request.defaults({ timeout: 500});
                     var loginOptions = {
-                        "url": express.options.config.express.baseUrl + "api/user/signin",
+                        "url": harness.express.options.config.express.baseUrl + "api/user/signin",
                         "json": {"name": username, "password": newPassword}
                     };
 
@@ -461,7 +316,7 @@ express.start(function(){
 
         var forgotRequest = require("request");
         var forgotOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/forgot",
+            "url": harness.express.options.config.express.baseUrl + "api/user/forgot",
             "json": {
                 "email":    email
             }
@@ -481,7 +336,7 @@ express.start(function(){
         var newPassword  = "reset";
         var resetRequest = request.defaults({ timeout: 500});
         var resetOptions = {
-            "url": express.options.config.express.baseUrl + "api/user/reset/",
+            "url": harness.express.options.config.express.baseUrl + "api/user/reset/",
             "json": {
                 "code":     "utter-nonsense-which-should-never-work",
                 "password": newPassword
@@ -496,5 +351,8 @@ express.start(function(){
             jqUnit.assertFalse("The response should not be 'ok'.", data.ok);
         });
     });
-});
+};
 
+// Launch all servers and then start the tests above.
+var harness = gpii.express.couchuser.tests.harness({});
+harness.start(runTests);
