@@ -13,15 +13,18 @@
   "author": "Tony Atkins <tony@raisingthefloor.org>",
   "license": "See LICENSE file for details.",
   "dependencies": {
-    "infusion":       "git://github.com/fluid-project/infusion.git#605b0bcfaedf6193c31456236d3aa4e42cf36a96",
+    "express-user-couchdb": "0.3.4",
+    "infusion": "git://github.com/fluid-project/infusion.git#605b0bcfaedf6193c31456236d3aa4e42cf36a96",
     "gpii-hb-helper": "git://github.com/the-t-in-rtf/gpii-hb-helper.git",
-    "express-user-couchdb": "0.3.4"
+    "when": "^3.7.2"
   },
   "devDependencies": {
-    "email-templates":      "1.1.2",
-    "gpii-express":         "git://github.com/the-t-in-rtf/gpii-express",
-    "gpii-pouch":           "git://github.com/the-t-in-rtf/gpii-pouch",
-    "jqUnit":               "git://github.com/fluid-project/node-jqUnit.git#e9bf72445bd343a4f3aabe3ba96a1087d3498612",
-    "request":              "2.51.0"
+    "email-templates": "1.1.2",
+    "gpii-express":    "git://github.com/the-t-in-rtf/gpii-express",
+    "gpii-mail-test":  "git://github.com/the-t-in-rtf/gpii-test-mail.git",
+    "gpii-pouch":      "git://github.com/the-t-in-rtf/gpii-pouch",
+    "jqUnit":          "git://github.com/fluid-project/node-jqUnit.git#e9bf72445bd343a4f3aabe3ba96a1087d3498612",
+    "request":         "2.51.0",
+    "simplesmtp":      "^0.3.34"
   }
 }

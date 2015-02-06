@@ -68,6 +68,21 @@
       "derived_key": "80a49cde29016df5daf977937027a574c8ba5f89",
       "salt": "04fe38b871928a6e057b8fe2acd64180",
       "verification_code": "51cd39a0-a87d-11e4-ae25-295d11aea1d5"
+    },
+    {
+      "_id": "org.couchdb.user:reset",
+      "password_scheme": "pbkdf2",
+      "iterations": 10,
+      "username": "reset",
+      "type": "user",
+      "name": "reset",
+      "email": "reset@localhost",
+      "roles": [
+      ],
+      "failedLoginAttempts": 0,
+      "derived_key": "5f8d896264f0f6f3036dadc308cc99f4b11dd3f3",
+      "salt": "3245c9df6a7813bb9c71dc0472824222",
+      "verified": "2014-12-22T09:31:58.331Z"
     }
   ]
 }

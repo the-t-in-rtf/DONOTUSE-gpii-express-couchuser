@@ -29,12 +29,7 @@ couchUser.addRoutesPrivate = function(that) {
 // Notably, we can add warnings if required middleware is not found.
 couchUser.localWrapperPrivate = function(that, req, res, next) {
     if (!that.expressCouchUserRouter) {
-        // Make a local copy so that we can resolve the templateDir setting to a real path, which the client library can't do.
-        var expressUserConfig = JSON.parse(JSON.stringify(that.options.config));
-        if (expressUserConfig.email.templateDir) {
-            expressUserConfig.email.templateDir = fluid.module.resolvePath(expressUserConfig.email.templateDir);
-        }
-        that.expressCouchUserRouter = require("express-user-couchdb")(expressUserConfig);
+        that.expressCouchUserRouter = require("express-user-couchdb")(that.options.config);
     }
 
     if (!req.body) {
@@ -49,6 +44,7 @@ couchUser.localWrapperPrivate = function(that, req, res, next) {
         console.error("Sessions are not enabled, user management will likely not function as expected.");
     }
 
+    // We have to manually call the "next" function ourselves after express-couchuser finishes its work.
     that.expressCouchUserRouter(req, res, next);
 };
 
