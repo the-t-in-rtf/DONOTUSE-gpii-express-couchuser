@@ -3,15 +3,11 @@
 
 (function ($) {
     "use strict";
-    var forgot    = fluid.registerNamespace("ctr.components.forgot");
-    var templates = fluid.registerNamespace("ctr.components.templates");
+    var namespace = "gpii.express.couchuser.frontend.forgot";
+    var forgot    = fluid.registerNamespace(namespace);
 
     // Try to log in and display the results
     forgot.submit = function(that, event) {
-        // Clear out any previous feedback before submitting
-        $(that.container).find(".alert-box").remove();
-
-
         if (event) { event.preventDefault(); }
         var email    = that.locate("email").val();
         var settings = {
@@ -25,7 +21,6 @@
         $.ajax(settings);
     };
 
-    // TODO: move this to a general module type that everyone inherits from
     forgot.displayError = function(that, jqXHR, textStatus, errorThrown) {
         var message = errorThrown;
         try {
@@ -36,7 +31,7 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        templates.prepend(that.locate("form"),"common-error", message);
+        that.templates.replaceWith(that.locate("message"),"common-error", message);
     };
 
     forgot.displayReceipt = function(that, responseData, textStatus, jqXHR) {
@@ -44,48 +39,38 @@
         if (jsonData && jsonData.ok) {
             that.applier.change("user",jsonData.user);
 
-            templates.replaceWith(that.locate("viewport"),"success", {message:"Check your email for instructions about resetting your password."});
-            that.controls.refresh(that);
+            that.locate("form").hide();
+
+            that.templates.replaceWith(that.locate("message"),"success", {message:"Check your email for instructions about resetting your password."});
         }
         else {
-            templates.prepend(that.locate("form"),"common-error", jsonData.message);
+            that.templates.replaceWith(that.locate("message"),"common-error", jsonData.message);
         }
     };
 
     forgot.refresh = function(that) {
-        templates.replaceWith(that.locate("viewport"),"forgot-form", that.model);
+        that.templates.replaceWith(that.locate("form"),"forgot-form", that.model);
         that.events.markupLoaded.fire();
     };
 
     // We have to do this because templates need to be loaded before we initialize our own code.
     forgot.init = function(that) {
-        templates.loadTemplates();
+        that.templates.loadTemplates();
         that.events.markupLoaded.fire();
     };
 
-    fluid.defaults("ctr.components.forgot", {
+    fluid.defaults(namespace, {
         gradeNames: ["fluid.viewRelayComponent", "autoInit"],
         components: {
-            data:     { type: "ctr.components.data" },
-            controls: {
-                type: "ctr.components.userControls",
-                container: ".ptd-user-container",
-                options: {
-                    components: { data: "{data}" },
-                    listeners: {
-                        afterLogout:
-                        {
-                            func: "{ctr.components.forgot}.events.refresh.fire"
-                        }
-                    }
-                }
+            templates: {
+                "type": "gpii.templates.hb.client"
             }
         },
-        model: "{data}.model",
         apiUrl: "/api/user",
         selectors: {
             "form":     ".forgot-form",
-            "viewport": ".ptd-viewport",
+            "message":  ".forgot-message",
+            "viewport": ".forgot-viewport",
             "email":    "input[name='email']"
         },
         events: {
@@ -95,25 +80,25 @@
         },
         invokers: {
             "submit": {
-                funcName: "ctr.components.forgot.submit",
+                funcName: namespace + ".submit",
                 args: [ "{that}", "{arguments}.0"]
             },
             "displayError": {
-                funcName: "ctr.components.forgot.displayError",
+                funcName: namespace + ".displayError",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "displayReceipt": {
-                funcName: "ctr.components.forgot.displayReceipt",
+                funcName: namespace + ".displayReceipt",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "init": {
-                funcName: "ctr.components.templates.loadTemplates"
+                funcName: "{templates}.loadTemplates"
             }
         },
         listeners: {
             onCreate: [
                 {
-                    "funcName": "ctr.components.forgot.init",
+                    "funcName": namespace + ".init",
                     "args":     "{that}"
                 }
             ],
@@ -125,11 +110,11 @@
                 }
             ],
             "submit": {
-                func: "ctr.components.forgot.submit",
+                func: namespace + ".submit",
                 args: [ "{that}"]
             },
             "refresh": {
-                func: "ctr.components.forgot.refresh",
+                func: namespace + ".refresh",
                 args: [ "{that}"]
             }
         }

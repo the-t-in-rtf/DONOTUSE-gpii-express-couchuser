@@ -5,7 +5,6 @@
 var fluid      = fluid || require("infusion");
 var namespace  = "gpii.express.couchuser.server";
 var couchUser  = fluid.registerNamespace(namespace);
-var path       = require("path");
 
 couchUser.addRoutesPrivate = function(that) {
     if (!that.options.config) {

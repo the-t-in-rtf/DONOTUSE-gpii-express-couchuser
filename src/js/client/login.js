@@ -63,17 +63,14 @@
         that.events.markupLoaded.fire();
     };
 
-    // You are required to provide an instance of {gpii.data} before instantiating this
     fluid.defaults(namespace, {
         gradeNames: ["fluid.viewRelayComponent", "autoInit"],
         components: {
             templates: {
                 "type": "gpii.templates.hb.client"
-            },
-            data:     { type: "gpii.data" }
+            }
         },
         model: {
-            "data": "{data}.model",
             "templates": {
                 "error":   "common-error",
                 "success": "common-success",

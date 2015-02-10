@@ -2,15 +2,11 @@
 // The second part of the password reset process, can only be used with a code generated using the "forgot password" form.
 (function ($) {
     "use strict";
-    var reset     = fluid.registerNamespace("ctr.components.reset");
-    var templates = fluid.registerNamespace("ctr.components.templates");
+    var namespace = "gpii.express.couchuser.frontend.reset";
+    var reset     = fluid.registerNamespace(namespace);
 
     // Try to log in and display the results
     reset.submit = function(that, event) {
-        // Clear out any previous feedback before submitting
-        $(that.container).find(".alert-box").remove();
-
-
         if (event) { event.preventDefault(); }
         var code     = that.locate("code").val();
         var password = that.locate("password").val();
@@ -31,7 +27,7 @@
         }
         // TODO:  Add support for password validation, using a module common to this and the signup form.
         else {
-            templates.prepend(that.locate("form"),"common-error", "The passwords you entered do not match.");
+            that.templates.prepend(that.locate("message"),"common-error", "The passwords you entered do not match.");
         }
     };
 
@@ -46,7 +42,7 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        templates.prepend(that.locate("form"),"common-error", message);
+        that.templates.prepend(that.locate("message"),"common-error", message);
     };
 
     reset.displayReceipt = function(that, responseData, textStatus, jqXHR) {
@@ -54,48 +50,37 @@
         if (jsonData && jsonData.ok) {
             that.applier.change("user",jsonData.user);
 
-            templates.replaceWith(that.locate("viewport"),"success", {message:"You have successfully reset your password."});
+            that.templates.replaceWith(that.locate("viewport"),"success", {message:"You have successfully reset your password."});
             that.controls.refresh(that);
         }
         else {
-            templates.prependTo(that.locate("form"),"common-error", jsonData.message);
+            that.templates.prependTo(that.locate("form"),"common-error", jsonData.message);
         }
     };
 
     reset.refresh = function(that) {
-        templates.replaceWith(that.locate("viewport"),"reset-form", that.model);
+        that.templates.replaceWith(that.locate("viewport"),"reset-form", that.model);
         that.events.markupLoaded.fire();
     };
 
     // We have to do this because templates need to be loaded before we initialize our own code.
     reset.init = function(that) {
-        templates.loadTemplates();
+        that.templates.loadTemplates();
         that.events.markupLoaded.fire();
     };
 
-    fluid.defaults("ctr.components.reset", {
+    fluid.defaults(namespace, {
         gradeNames: ["fluid.viewRelayComponent", "autoInit"],
         components: {
-            data:     { type: "ctr.components.data" },
-            controls: {
-                type: "ctr.components.userControls",
-                container: ".ptd-user-container",
-                options: {
-                    components: { data: "{data}" },
-                    listeners: {
-                        afterLogout:
-                        {
-                            func: "{ctr.components.reset}.events.refresh.fire"
-                        }
-                    }
-                }
+            templates: {
+                "type": "gpii.templates.hb.client"
             }
         },
-        model: "{data}.model",
         apiUrl: "/api/user",
         selectors: {
             "form":     ".reset-form",
-            "viewport": ".ptd-viewport",
+            "message":  ".reset-message",
+            "viewport": ".reset-viewport",
             "code":     "input[name='code']",
             "confirm":  "input[name='confirm']",
             "password": "input[name='password']"
@@ -107,25 +92,25 @@
         },
         invokers: {
             "submit": {
-                funcName: "ctr.components.reset.submit",
+                funcName: namespace + ".submit",
                 args: [ "{that}", "{arguments}.0"]
             },
             "displayError": {
-                funcName: "ctr.components.reset.displayError",
+                funcName: namespace + ".displayError",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "displayReceipt": {
-                funcName: "ctr.components.reset.displayReceipt",
+                funcName: namespace + ".displayReceipt",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "init": {
-                funcName: "ctr.components.templates.loadTemplates"
+                funcName: "{templates}.loadTemplates"
             }
         },
         listeners: {
             onCreate: [
                 {
-                    "funcName": "ctr.components.reset.init",
+                    "funcName": namespace + ".init",
                     "args":     "{that}"
                 }
             ],
@@ -137,11 +122,11 @@
                 }
             ],
             "submit": {
-                func: "ctr.components.reset.submit",
+                func: namespace + ".submit",
                 args: [ "{that}"]
             },
             "refresh": {
-                func: "ctr.components.reset.refresh",
+                func: namespace + ".refresh",
                 args: [ "{that}"]
             }
         }

@@ -1,28 +1,26 @@
 <html>
     <head>
-        <title>Login Form (used for client-side tests)</title>
+        <title>"Forgot Password" Form (used for client-side tests)</title>
 
         {{>common-includes}}
 
         <!-- Bring in client library being tested -->
-        <script type="text/javascript" src="/js/client/login.js"></script>
+        <script type="text/javascript" src="/js/client/forgot.js"></script>
     </head>
     <body>
-        <!-- Sample login form with all required markup -->
-
-        <div class="column small-offset-4 small-4 login-viewport">
-            <div class="login-viewport">
-
-                <div class="login-message">
-                    <p>Please enter your username and password to log in.</p>
+        <!-- Sample "forgot password" form with all required markup -->
+        <div class="row">
+            <div class="column small-offset-4 small-4 forgot-viewport">
+                <div class="forgot-message">
+                    <p>Please enter the email address you used when creating your account, and a password reset email will be sent to you.</p>
                 </div>
-                {{>login-form}}
+                {{>forgot-form}}
             </div>
         </div>
 
         <!-- configure and instantiate our module -->
         <script type="text/javascript">
-            var login = gpii.express.couchuser.frontend.login("body", {
+            var forgot = gpii.express.couchuser.frontend.forgot("body", {
                 components: {
                     templates: {
                         options: {
@@ -38,3 +36,6 @@
         </script>
     </body>
 </html>
+
+
+

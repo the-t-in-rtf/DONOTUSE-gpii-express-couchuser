@@ -48,7 +48,7 @@ harness.start = function(that, callback) {
 
 var bowerDir        = path.resolve(__dirname, "../../../bower_components");
 var jsDir           = path.resolve(__dirname, "../../js");
-var mailTemplateDir = path.resolve(__dirname, "../../js/server/templates");
+var mailTemplateDir = path.resolve(__dirname, "../templates");
 var modulesDir      = path.resolve(__dirname, "../../../node_modules");
 var userDataFile    = path.resolve(__dirname, "../data/users/users.json");
 var viewDir         = path.resolve(__dirname, "../views");

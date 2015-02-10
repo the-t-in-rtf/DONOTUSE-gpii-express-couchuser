@@ -1,28 +1,24 @@
 <html>
     <head>
-        <title>Login Form (used for client-side tests)</title>
+        <title>Reset Form (used for client-side tests)</title>
 
         {{>common-includes}}
 
         <!-- Bring in client library being tested -->
-        <script type="text/javascript" src="/js/client/login.js"></script>
+        <script type="text/javascript" src="/js/client/reset.js"></script>
     </head>
     <body>
-        <!-- Sample login form with all required markup -->
+        <!-- Sample reset form with all required markup -->
 
-        <div class="column small-offset-4 small-4 login-viewport">
-            <div class="login-viewport">
-
-                <div class="login-message">
-                    <p>Please enter your username and password to log in.</p>
-                </div>
-                {{>login-form}}
+        <div class="row">
+            <div class="column small-offset-4 small-4 reset-viewport">
+                {{>reset-form}}
             </div>
         </div>
 
         <!-- configure and instantiate our module -->
         <script type="text/javascript">
-            var login = gpii.express.couchuser.frontend.login("body", {
+            var reset = gpii.express.couchuser.frontend.reset("body", {
                 components: {
                     templates: {
                         options: {
@@ -38,3 +34,7 @@
         </script>
     </body>
 </html>
+
+
+
+
