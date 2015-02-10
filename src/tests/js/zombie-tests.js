@@ -1,113 +1,88 @@
-// Test all server side modules (including basic template rendering)...
+// Test all user management functions using only a browser (and something to receive emails).
+//
+// There is some overlap between this and the server-tests.js, a test that fails in both is likely broken on the server side, a test that only fails here is likely broken in the client-facing code.
+
 "use strict";
-var fluid = fluid || require("infusion");
-var gpii  = fluid.registerNamespace("gpii");
-var path  = require("path");
-fluid.registerNamespace("gpii.express");
+var fluid      = require("../../../node_modules/infusion/src/module/fluid");
+var gpii       = fluid.registerNamespace("gpii");
 
-require("../../../node_modules/gpii-express/src/js/express");
-require("../../../node_modules/gpii-express/src/js/router");
-require("../../../node_modules/gpii-express/src/js/middleware");
-require("../../../node_modules/gpii-express/src/js/static");
-require("../../../node_modules/gpii-express/src/js/helper");
+var jqUnit  = fluid.require("jqUnit");
+var Browser = require("zombie");
 
-require("../../js/common/helpers");
-require("../../js/server/helpers-server");
-require("../../js/server/inline");
+require("./test-harness.js");
 
-var bcDir      = path.resolve(__dirname, "../../../bower_components");
-var contentDir = path.resolve(__dirname, "../html");
-var srcDir     = path.resolve(__dirname, "../../../src");
-var modulesDir = path.resolve(__dirname, "../../../node_modules");
-var viewDir    = path.resolve(__dirname, "../views");
-
-var testServer = gpii.express({
-    config:  {
-        "express": {
-            "port" :   6994,
-            "baseUrl": "http://localhost:6994/",
-            "views":   viewDir
-        }
-    },
-    components: {
-        inline: {
-            type: "gpii.express.hb.inline",
-            "options": {
-                "path": "/hbs"
-            }
-        },
-        bc: {
-            type: "gpii.express.router.static",
-            "options": {
-                path:    "/bc",
-                content: bcDir
-            }
-        },
-        js: {
-            type: "gpii.express.router.static",
-            "options": {
-                path:    "/src",
-                content: srcDir
-            }
-        },
-        modules: {
-            type: "gpii.express.router.static",
-            "options": {
-                path:    "/modules",
-                content: modulesDir
-            }
-        },
-        content: {
-            type: "gpii.express.router.static",
-            "options": {
-                path:    "/content",
-                content: contentDir
-            }
-        },
-        helpers: {
-            type: "gpii.express.hb.helpers.server"
-        }
-    }
-});
-
-testServer.runTests = function() {
-    var jqUnit  = fluid.require("jqUnit");
-    var Browser = require("zombie");
+function runTests() {
     var browser = Browser.create();
 
-    jqUnit.module("Integration tests for combined client and server-side template handling...");
+    jqUnit.module("End-to-end functional user management tests...");
 
-    jqUnit.asyncTest("Use zombie.js to run the client-side tests...", function() {
-        browser.on("error", function(error){
+    jqUnit.asyncTest("Login with a valid username and password...", function() {
+        browser.visit( harness.express.options.config.express.baseUrl + "content/login").then(function(error){
             jqUnit.start();
             jqUnit.assertNull("There should be no errors...", error);
-        });
-        browser.visit( testServer.options.config.express.baseUrl + "content/client-tests.html").then(function () {
-            jqUnit.start();
+            jqUnit.stop();
 
-            // Zombie provides its own assert library, but we can also just use its jQuery to inspect the DOM.
-            var failures = 0;
-            browser.window.$(".counts .failed").each(function(index, value){
-                var element = browser.window.$(value);
-                failures += parseInt(element.text());
-            });
-            jqUnit.assertEquals("There should be no failed tests...", "0", failures);
+            browser.fill("username", "admin")
+                .fill("password", "admin")
+                .pressButton("Log In", function() {
+                    jqUnit.start();
+                    // The login form should no longer be visible
+                    var loginForm = browser.window.$(".login-form");
+                    jqUnit.assertNotUndefined("There should be a login form...", loginForm.html());
+                    jqUnit.assertEquals("The login form should not be hidden...", "none", loginForm.css("display"));
 
-            var passes = 0;
-            browser.window.$(".counts .passed").each(function(index, value){
-                var element = browser.window.$(value);
-                passes += parseInt(element.text());
-            });
-            jqUnit.assertTrue("There should be passed tests...", passes > 0);
+                    // A "success" message should be visible
+                    var feedback = browser.window.$(".success");
+                    jqUnit.assertNotUndefined("There should be a positive feedback message...", feedback.html());
 
-            // Output the qunit summary as part of our results.
-            console.log("Browser Test Summary:\n\t" + browser.window.$("#qunit-testresult").text());
+                    // There should be no alerts
+                    var alert = browser.window.$(".alert");
+                    jqUnit.assertUndefined("There should not be any alerts...", alert.html());
+                });
         });
     });
-};
 
-testServer.start(function() {
-    testServer.runTests();
-});
+    jqUnit.asyncTest("Login with an invalid username and password...", function() {
+        browser.visit( harness.express.options.config.express.baseUrl + "content/login").then(function(error){
+            jqUnit.start();
+            jqUnit.assertNull("There should be no errors...", error);
+            jqUnit.stop();
 
+            browser.fill("username", "bogus")
+                .fill("password", "bogus")
+                .pressButton("Log In", function() {
+                    jqUnit.start();
+                    // The login form should be visible
+                    var loginForm = browser.window.$(".login-form");
+                    jqUnit.assertNotUndefined("There should be a login form...", loginForm.html());
+                    jqUnit.assertEquals("The login form should not be hidden...", "", loginForm.css("display"));
 
+                    // A "success" message should be visible
+                    var feedback = browser.window.$(".success");
+                    jqUnit.assertUndefined("There should not be a positive feedback message...", feedback.html());
+
+                    // There should be no alerts
+                    var alert = browser.window.$(".alert");
+                    jqUnit.assertNotUndefined("There should be an alert...", alert.html());
+                });
+        });
+    });
+
+    // TODO: Reset a user's password
+
+    // TODO: Try to reset the password for a user who does not exist
+
+    // TODO: Leave out key information while resetting a user's password
+
+    // TODO: Use an invalid reset code
+
+    // TODO: Try to create a user with the same email address as an existing user
+
+    // TODO: Create and verify a new user
+
+    // TODO: Use an invalid verification code
+}
+
+// Launch all servers and then start the tests above.
+var harness = gpii.express.couchuser.tests.harness({});
+harness.start(runTests);

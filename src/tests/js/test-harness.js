@@ -32,15 +32,7 @@ require("../../../node_modules/gpii-test-mail/src/js/mailserver");
 
 require("../../js/server");
 
-var mailTemplateDir = path.join(__dirname, '../../js/server/templates');
-
-var viewDir      = path.resolve(__dirname, "../views");
-var modulesDir   = path.resolve(__dirname, "../../../node_modules");
-var jsDir        = path.resolve(__dirname, "../../js");
-var bowerDir     = path.resolve(__dirname, "../../../bower_components");
-var userDataFile = path.resolve(__dirname, "../data/users/users.json");
-
-var harness = fluid.registerNamespace(namespace);
+var harness      = fluid.registerNamespace(namespace);
 
 // Convenience method to launch all servers at once and execute a callback when all are complete.
 harness.start = function(that, callback) {
@@ -53,6 +45,13 @@ harness.start = function(that, callback) {
         //});
     });
 };
+
+var bowerDir        = path.resolve(__dirname, "../../../bower_components");
+var jsDir           = path.resolve(__dirname, "../../js");
+var mailTemplateDir = path.resolve(__dirname, "../../js/server/templates");
+var modulesDir      = path.resolve(__dirname, "../../../node_modules");
+var userDataFile    = path.resolve(__dirname, "../data/users/users.json");
+var viewDir         = path.resolve(__dirname, "../views");
 
 // TODO:  Figure out why our pouch instance doesn't work with express-couchuser, and change options.config.users in the express component below
 // For now, we use our local couch instance directly.
@@ -108,18 +107,6 @@ fluid.defaults(namespace, {
                     "user": {
                         "type": "gpii.express.couchuser.server"
                     },
-                    "dispatcher": {
-                        "type": "gpii.express.hb.dispatcher",
-                        "options": {
-                            path: "/content"
-                        }
-                    },
-                    "handlebars": {
-                        "type":  "gpii.express.hb.inline",
-                        "options": {
-                            path: "/hbs"
-                        }
-                    },
                     "modules": {
                         "type":  "gpii.express.router.static",
                         "options": {
@@ -140,40 +127,56 @@ fluid.defaults(namespace, {
                             path:    "/bc",
                             content: bowerDir
                         }
-                    }
-                }
-            }
-        },
-        "pouch": {
-            "type": "gpii.express",
-            "options": {
-                "config": {
-                    "express": {
-                        "port" :   7534,
-                        "baseUrl": "http://localhost:7534/"
                     },
-                    "app": {
-                        "name": "Pouch Test Server",
-                        "url": "http://localhost:7534/"
-                    }
-                },
-                components: {
-                    "pouch": {
-                        "type": "gpii.pouch",
+                    content: {
+                        type: "gpii.express.hb.dispatcher",
                         "options": {
-                            "path": "/",
-                            "model": {
-                                "databases": {
-                                    "_users": {
-                                        "data": userDataFile
-                                    }
-                                }
-                            }
+                            path:    "/content"
                         }
+                    },
+                    inline: {
+                        type: "gpii.express.hb.inline",
+                        "options": {
+                            "path": "/hbs"
+                        }
+                    },
+                    helpers: {
+                        type: "gpii.express.hb.helpers.server"
                     }
                 }
             }
         },
+        // TODO:  Reenable once we get pouch working with express-couchuser
+        //"pouch": {
+        //    "type": "gpii.express",
+        //    "options": {
+        //        "config": {
+        //            "express": {
+        //                "port" :   7534,
+        //                "baseUrl": "http://localhost:7534/"
+        //            },
+        //            "app": {
+        //                "name": "Pouch Test Server",
+        //                "url": "http://localhost:7534/"
+        //            }
+        //        },
+        //        components: {
+        //            "pouch": {
+        //                "type": "gpii.pouch",
+        //                "options": {
+        //                    "path": "/",
+        //                    "model": {
+        //                        "databases": {
+        //                            "_users": {
+        //                                "data": userDataFile
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //},
         "smtp": {
             "type": "gpii.test.mail.smtp",
             "options": {
@@ -188,5 +191,3 @@ fluid.defaults(namespace, {
         }
     }
 });
-
-

@@ -27,6 +27,7 @@
     "tests"
   ],
   "dependencies": {
-    "fluid-handlebars-helper": "git://github.com/the-t-in-rtf/fluid-handlebars-helper.git"
+    "fluid-handlebars-helper": "git://github.com/the-t-in-rtf/fluid-handlebars-helper.git",
+    "foundation":              "zurb/bower-foundation#~5.3.1"
   }
 }

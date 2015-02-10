@@ -15,7 +15,7 @@
         var settings = {
             type:    "POST",
             url:     that.options.loginUrl,
-            data:    JSON.stringify({ "name": name, "password": password }),
+            data:    { "name": name, "password": password },
             success: that.displayReceipt,
             error:   that.displayError
         };
@@ -33,24 +33,27 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        that.templates.prepend(that.locate("form"), that.model.templates.error, message);
+        that.templates.replaceWith(that.locate("message"), that.model.templates.error, message);
     };
 
     login.displayReceipt = function(that, responseData, textStatus, jqXHR) {
         var jsonData = JSON.parse(responseData);
         if (jsonData && jsonData.ok) {
-            that.applier.change("user",jsonData.user);
+            that.applier.change("user", jsonData.user);
 
-            that.templates.replaceWith(that.locate("viewport"), that.model.templates.form, that.model.data);
-            that.controls.refresh(that);
+            that.locate("form").hide();
+            that.templates.replaceWith(that.locate("message"), that.model.templates.success, "You are now logged in as " + that.model.user.name + ".");
+
+            // Anything that should refresh on login should bind to this event.
+            that.events.login.fire();
         }
         else {
-            templates.prependTo(that.locate("form"), that.model.templates.error, jsonData.message);
+            that.templates.replaceWith(that.locate("message"), that.model.templates.error, jsonData.message);
         }
     };
 
     login.refresh = function(that) {
-        that.templates.replaceWith(that.locate("viewport"), that.options.templates.form, that.model.data);
+        that.templates.replaceWith(that.locate("form"), that.model.templates.form, that.model.data);
         that.events.markupLoaded.fire();
     };
 
@@ -59,7 +62,6 @@
         that.templates.loadTemplates();
         that.events.markupLoaded.fire();
     };
-
 
     // You are required to provide an instance of {gpii.data} before instantiating this
     fluid.defaults(namespace, {
@@ -82,12 +84,14 @@
         selectors: {
             "form":     ".login-form",
             "viewport": ".login-viewport",
+            "message":  ".login-message",
             "name":     "input[name='username']",
             "password": "input[name='password']"
         },
         events: {
             "submit":       "preventable",
             "refresh":      "preventable",
+            "login":        "preventable",
             "markupLoaded": "preventable"
         },
         invokers: {

@@ -22,7 +22,11 @@ couchUser.addRoutesPrivate = function(that) {
         console.error("You have not configured any mail settings, express-couchuser will probably not work as you expect.")
     }
 
-    that.model.router.use(that.options.path, that.localWrapper);
+    var expressUserCouchdb = require("express-user-couchdb")(that.options.config);
+    that.model.express.use("/", expressUserCouchdb);
+
+    // TODO:  When express user couchdb works better with routers, switch to this instead of using express directly.
+    //that.model.router.use("/", expressUserCouchdb);
 };
 
 // A local wrapper to give us more control over the conversation before and after passing to express-couchuser.
@@ -49,9 +53,10 @@ couchUser.localWrapperPrivate = function(that, req, res, next) {
 };
 
 fluid.defaults(namespace, {
-    gradeNames: ["fluid.standardRelayComponent", "gpii.express.router", "autoInit"],
+    gradeNames: ["fluid.modelRelayComponent", "gpii.express.router", "autoInit"],
     path:    "/",
     model: {
+        express: "{gpii.express}.model.express",
         router:  null
     },
     events: {
