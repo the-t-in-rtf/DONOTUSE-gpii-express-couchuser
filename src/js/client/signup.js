@@ -18,12 +18,19 @@
             return;
         }
 
+        // This is not at all nice, but in order to make jQuery correctly send array data, we have to:
+        //
+        // a) set `traditional` to `true`, otherwise the roles variable comes through with brackets appended to it.
+        // b) send at least a two-item array (a one-item array becomes a string variable)
+        //
+        // Thanks jQuery!
         var settings = {
             type:        "POST",
             url:         that.options.apiUrl + "/signup",
             success:     that.displayReceipt,
             error:       that.displayError,
-            data:        { name: name, "password": password, "email": email, "roles": ["user"] }
+            traditional: true,
+            data:        { name: name, "password": password, "email": email, "roles": ["user", "user"] }
         };
 
         $.ajax(settings);

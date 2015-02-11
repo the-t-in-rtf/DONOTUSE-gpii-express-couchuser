@@ -6,7 +6,7 @@
 var fluid         = require("../../../../node_modules/infusion/src/module/fluid");
 var gpii          = fluid.registerNamespace("gpii");
 
-//var jqUnit        = fluid.require("jqUnit");
+var jqUnit        = fluid.require("jqUnit");
 var Browser       = require("zombie");
 
 var fs            = require("fs");
@@ -99,9 +99,9 @@ function runTests() {
                     isBrowserSane(jqUnit, browser);
 
                     // The signup form should not be visible
-                    var forgotForm = browser.window.$(".signup-form");
-                    jqUnit.assertNotUndefined("There should be a signup form...", forgotForm.html());
-                    jqUnit.assertEquals("The signup form should be hidden...", "none", forgotForm.css("display"));
+                    var signupForm = browser.window.$(".signup-form");
+                    jqUnit.assertNotUndefined("There should be a signup form...", signupForm.html());
+                    jqUnit.assertEquals("The signup form should be hidden...", "none", signupForm.css("display"));
 
                     // A "success" message should be visible
                     var feedback = browser.window.$(".success");
@@ -123,5 +123,5 @@ function runTests() {
 
 // Launch all servers and then start the tests above.
 var harness = gpii.express.couchuser.tests.harness({});
-//harness.start(runTests);
-harness.start();
+harness.start(runTests);
+//harness.start();
