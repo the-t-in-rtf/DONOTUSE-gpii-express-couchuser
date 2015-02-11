@@ -1,41 +1,32 @@
-// Allow users to verify their accounts using /api/user/verify/:code
+// A front-end component to provide meaningful feedback when users verify their accounts using /api/user/verify/:code
 (function ($) {
     "use strict";
-    var reset     = fluid.registerNamespace("ctr.components.reset");
-    var templates = fluid.registerNamespace("ctr.components.templates");
+    var namespace = "ctr.components.reset";
+    var verify     = fluid.registerNamespace(namespace);
 
     // Try to log in and display the results
-    reset.submit = function(that, event) {
-        // Clear out any previous feedback before submitting
-        $(that.container).find(".alert-box").remove();
-
-
+    verify.submit = function(that, event) {
         if (event) { event.preventDefault(); }
-        var code     = that.locate("code").val();
-        var password = that.locate("password").val();
-        var confirm  = that.locate("confirm").val();
 
-        // We can trust the upstream server to bust us if we have an invalid or missing code, but it doesn't support password confirmation, so we have to check that ourselves
-        if (password === confirm) {
+        if (!that.model || !that.model.code) {
+            that.displayError(that, null, null, "<p>Cannot continue without a verification code.  Please check your email for a verification link or contact a system administrator for assistance.</p>")
+        }
+        else {
             var settings = {
                 type:    "POST",
-                url:     that.options.apiUrl + "/reset",
+                url:     that.options.apiUrl + "/verify",
                 success: that.displayReceipt,
                 error:   that.displayError,
                 json:    true,
-                data: { "code": code, "password": password }
+                data: { "code": that.model.code }
             };
 
             $.ajax(settings);
         }
-        // TODO:  Add support for password validation, using a module common to this and the signup form.
-        else {
-            templates.prepend(that.locate("form"),"common-error", "The passwords you entered do not match.");
-        }
     };
 
     // TODO: move this to a general module type that everyone inherits from
-    reset.displayError = function(that, jqXHR, textStatus, errorThrown) {
+    verify.displayError = function(that, jqXHR, textStatus, errorThrown) {
         var message = errorThrown;
         try {
             var jsonData = JSON.parse(jqXHR.responseText);
@@ -48,56 +39,38 @@
         templates.prepend(that.locate("form"),"common-error", message);
     };
 
-    reset.displayReceipt = function(that, responseData, textStatus, jqXHR) {
+    verify.displayReceipt = function(that, responseData, textStatus, jqXHR) {
         var jsonData = JSON.parse(responseData);
         if (jsonData && jsonData.ok) {
             that.applier.change("user",jsonData.user);
 
             templates.replaceWith(that.locate("viewport"),"success", {message:"You have successfully reset your password."});
-            that.controls.refresh(that);
         }
         else {
             templates.prependTo(that.locate("form"),"common-error", jsonData.message);
         }
     };
 
-    reset.refresh = function(that) {
+    verify.refresh = function(that) {
         templates.replaceWith(that.locate("viewport"),"reset-form", that.model);
         that.events.markupLoaded.fire();
     };
 
     // We have to do this because templates need to be loaded before we initialize our own code.
-    reset.init = function(that) {
+    verify.init = function(that) {
         templates.loadTemplates();
         that.events.markupLoaded.fire();
     };
 
-    fluid.defaults("ctr.components.reset", {
+    fluid.defaults(namespace, {
         gradeNames: ["fluid.viewRelayComponent", "autoInit"],
-        components: {
-            data:     { type: "ctr.components.data" },
-            controls: {
-                type: "ctr.components.userControls",
-                container: ".ptd-user-container",
-                options: {
-                    components: { data: "{data}" },
-                    listeners: {
-                        afterLogout:
-                        {
-                            func: "{ctr.components.reset}.events.refresh.fire"
-                        }
-                    }
-                }
-            }
+        model: {
+            code: null
         },
-        model: "{data}.model",
         apiUrl: "/api/user",
         selectors: {
-            "form":     ".reset-form",
-            "viewport": ".ptd-viewport",
-            "code":     "input[name='code']",
-            "confirm":  "input[name='confirm']",
-            "password": "input[name='password']"
+            "viewport": ".reset-viewport",
+            "message":  ".reset-message",
         },
         events: {
             "submit":       "preventable",
@@ -106,41 +79,32 @@
         },
         invokers: {
             "submit": {
-                funcName: "ctr.components.reset.submit",
+                funcName: namespace + ".submit",
                 args: [ "{that}", "{arguments}.0"]
             },
             "displayError": {
-                funcName: "ctr.components.reset.displayError",
+                funcName: namespace + ".displayError",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "displayReceipt": {
-                funcName: "ctr.components.reset.displayReceipt",
+                funcName: namespace + ".displayReceipt",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "init": {
-                funcName: "ctr.components.templates.loadTemplates"
+                funcName: "{templates}.loadTemplates"
             }
         },
         listeners: {
-            onCreate: [
-                {
-                    "funcName": "ctr.components.reset.init",
-                    "args":     "{that}"
-                }
-            ],
-            "markupLoaded": [
-                {
-                    "this": "{that}.dom.form",
-                    method: "submit",
-                    args:   "{that}.submit"
-                }
-            ],
-            "submit": {
-                func: "ctr.components.reset.submit",
+            onCreate: {
+                "funcName": namespace + ".init",
+                "args":     "{that}"
+            },
+            "markupLoaded": {
+                func: namespace + ".submit",
                 args: [ "{that}"]
             },
             "refresh": {
-                func: "ctr.components.reset.refresh",
+                func: namespace + ".refresh",
                 args: [ "{that}"]
             }
         }

@@ -1,15 +1,11 @@
 // provide a front-end to /api/user/signup
 (function ($) {
     "use strict";
-    var signup    = fluid.registerNamespace("ctr.components.signup");
-    var templates = fluid.registerNamespace("ctr.components.templates");
+    var namespace = "gpii.express.couchuser.frontend.signup";
+    var signup    = fluid.registerNamespace(namespace);
 
     // Try to log in and display the results
     signup.submit = function(that, event) {
-        // Clear out any previous feedback before submitting
-        $(that.container).find(".alert-box").remove();
-
-
         if (event) { event.preventDefault(); }
         var name     = that.locate("name").val();
         var email    = that.locate("email").val();
@@ -22,13 +18,12 @@
             return;
         }
 
-        // TODO: Fix it so that we don't have to submit bogus roles to create a user correctly (jQuery is stripping empty data).
         var settings = {
-            type:    "POST",
-            url:     that.options.apiUrl + "/signup",
-            success: that.displayReceipt,
-            error:   that.displayError,
-            data: { name: name, "password": password, "email": email, "roles": ["user"] }
+            type:        "POST",
+            url:         that.options.apiUrl + "/signup",
+            success:     that.displayReceipt,
+            error:       that.displayError,
+            data:        { name: name, "password": password, "email": email, "roles": ["user"] }
         };
 
         $.ajax(settings);
@@ -44,56 +39,45 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        templates.prepend(that.locate("form"),"common-error",message);
+        that.templates.replaceWith(that.locate("message"),"common-error",message);
     };
 
     signup.displayReceipt = function(that, responseData, textStatus, jqXHR) {
         var jsonData = JSON.parse(responseData);
         if (jsonData && jsonData.ok) {
             that.applier.change("user",jsonData.user);
+            that.locate("form").hide();
 
-            templates.replaceWith(that.locate("viewport"),"success", {message:"You have created an account. Check your email for details about verifying your new account."});
-            that.controls.refresh(that);
+            that.templates.replaceWith(that.locate("message"),"success", {message:"You have created an account. Check your email for details about verifying your new account."});
         }
         else {
-            templates.prependTo(that.locate("form"),"common-error", jsonData.message);
+            that.templates.replaceWith(that.locate("message"),"common-error", jsonData.message);
         }
     };
 
     signup.refresh = function(that) {
-        templates.replaceWith(that.locate("viewport"),"signup-form", that.model);
+        that.templates.replaceWith(that.locate("form"),"signup-form", that.model);
         that.events.markupLoaded.fire();
     };
 
     // We have to do this because templates need to be loaded before we initialize our own code.
     signup.init = function(that) {
-        templates.loadTemplates();
+        that.templates.loadTemplates();
         that.events.markupLoaded.fire();
     };
 
-    fluid.defaults("ctr.components.signup", {
+    fluid.defaults(namespace, {
         gradeNames: ["fluid.viewRelayComponent", "autoInit"],
+        apiUrl: "/api/user",
         components: {
-            data:     { type: "ctr.components.data" },
-            controls: {
-                type: "ctr.components.userControls",
-                container: ".ptd-user-container",
-                options: {
-                    components: { data: "{data}" },
-                    listeners: {
-                        afterLogout:
-                        {
-                            func: "{ctr.components.signup}.events.refresh.fire"
-                        }
-                    }
-                }
+            templates: {
+                "type": "gpii.templates.hb.client"
             }
         },
-        model: "{data}.model",
-        apiUrl: "/api/user",
         selectors: {
             "form":     ".signup-form",
-            "viewport": ".ptd-viewport",
+            "viewport": ".signup-viewport",
+            "message":  ".signup-message",
             "name":     "input[name='username']",
             "email":    "input[name='email']",
             "password": "input[name='password']",
@@ -106,25 +90,25 @@
         },
         invokers: {
             "submit": {
-                funcName: "ctr.components.signup.submit",
+                funcName: namespace + ".submit",
                 args: [ "{that}", "{arguments}.0"]
             },
             "displayError": {
-                funcName: "ctr.components.signup.displayError",
+                funcName: namespace + ".displayError",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "displayReceipt": {
-                funcName: "ctr.components.signup.displayReceipt",
+                funcName: namespace + ".displayReceipt",
                 args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
             },
             "init": {
-                funcName: "ctr.components.templates.loadTemplates"
+                funcName: namespace + ".loadTemplates"
             }
         },
         listeners: {
             onCreate: [
                 {
-                    "funcName": "ctr.components.signup.init",
+                    "funcName": namespace + ".init",
                     "args":     "{that}"
                 }
             ],
@@ -136,11 +120,11 @@
                 }
             ],
             "submit": {
-                func: "ctr.components.signup.submit",
+                func: namespace + ".submit",
                 args: [ "{that}"]
             },
             "refresh": {
-                func: "ctr.components.signup.refresh",
+                func: namespace + ".refresh",
                 args: [ "{that}"]
             }
         }

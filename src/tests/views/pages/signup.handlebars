@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title>Signup Form (used for client-side tests)</title>
+
+        {{>common-includes}}
+
+        <!-- Bring in client library being tested -->
+        <script type="text/javascript" src="/js/client/signup.js"></script>
+    </head>
+    <body>
+        <!-- Sample signup form with all required markup -->
+
+        <div class="body">
+            <div class="row">
+                <div class="column small-offset-4 small-4 signup-viewport">
+                    {{>signup-form}}
+                </div>
+            </div>
+        </div>
+
+        <!-- configure and instantiate our module -->
+        <script type="text/javascript">
+            var signup = gpii.express.couchuser.frontend.signup("body", {
+                components: {
+                    templates: {
+                        options: {
+                            model: {
+                                "templateUrl": "/hbs"
+                            }
+                        }
+                    }
+                }
+            });
+
+            $(document).foundation();
+        </script>
+    </body>
+</html>
+
+

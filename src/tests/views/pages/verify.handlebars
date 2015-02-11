@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Verification Page (used for client-side tests)</title>
+
+        {{>common-includes}}
+
+        <!-- Bring in client library being tested -->
+        <script type="text/javascript" src="/js/client/signup.js"></script>
+    </head>
+    <body>
+        <div class="row">
+            <div class="verify-viewport column small-offset-4 small-4"
+            <div class="verify-message loading">
+                <p>Please wait while we check your verification code...</p>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var verify = gpii.express.couchuser.frontend.verify("body", {
+                components: {
+                    templates: {
+                        options: {
+                            "model": {
+                                "code": {{jsonify req.params.code }},
+                                "templateUrl": "/hbs",
+                            }
+                        }
+                    }
+                }
+            });
+
+            $(document).foundation();
+        </script>
+    </body>
+</html>
+
+

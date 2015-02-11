@@ -49,17 +49,17 @@
         var jsonData = JSON.parse(responseData);
         if (jsonData && jsonData.ok) {
             that.applier.change("user",jsonData.user);
+            that.locate("form").hide();
 
-            that.templates.replaceWith(that.locate("viewport"),"success", {message:"You have successfully reset your password."});
-            that.controls.refresh(that);
+            that.templates.replaceWith(that.locate("message"),"success", {message:"You have successfully reset your password."});
         }
         else {
-            that.templates.prependTo(that.locate("form"),"common-error", jsonData.message);
+            that.templates.replaceWith(that.locate("message"),"common-error", jsonData.message);
         }
     };
 
     reset.refresh = function(that) {
-        that.templates.replaceWith(that.locate("viewport"),"reset-form", that.model);
+        that.templates.replaceWith(that.locate("form"),"reset-form", that.model);
         that.events.markupLoaded.fire();
     };
 
