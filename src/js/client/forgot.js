@@ -31,7 +31,7 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        that.templates.replaceWith(that.locate("message"),"common-error", message);
+        that.templates.html(that.locate("message"),"common-error", { message: message });
     };
 
     forgot.displayReceipt = function(that, responseData, textStatus, jqXHR) {
@@ -41,10 +41,10 @@
 
             that.locate("form").hide();
 
-            that.templates.replaceWith(that.locate("message"),"success", {message:"Check your email for instructions about resetting your password."});
+            that.templates.html(that.locate("message"),"success", { message:"Check your email for instructions about resetting your password." });
         }
         else {
-            that.templates.replaceWith(that.locate("message"),"common-error", jsonData.message);
+            that.templates.html(that.locate("message"),"common-error", { message: jsonData.message });
         }
     };
 

@@ -46,7 +46,7 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        that.templates.replaceWith(that.locate("message"),"common-error",message);
+        that.templates.html(that.locate("message"),"common-error", { message: message });
     };
 
     signup.displayReceipt = function(that, responseData, textStatus, jqXHR) {
@@ -55,10 +55,10 @@
             that.applier.change("user",jsonData.user);
             that.locate("form").hide();
 
-            that.templates.replaceWith(that.locate("message"),"success", {message:"You have created an account. Check your email for details about verifying your new account."});
+            that.templates.html(that.locate("message"),"success", { message:"You have created an account. Check your email for details about verifying your new account." });
         }
         else {
-            that.templates.replaceWith(that.locate("message"),"common-error", jsonData.message);
+            that.templates.html(that.locate("message"),"common-error", { message: jsonData.message });
         }
     };
 

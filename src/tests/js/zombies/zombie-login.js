@@ -18,7 +18,7 @@ require("../test-harness.js");
 function runTests() {
     var browser;
 
-    jqUnit.module("End-to-end functional login tests...", { "setup": function() { browser = Browser.create(); }});
+    jqUnit.module("End-to-end functional login tests...", { "setup": function() { browser = Browser.create({ continueOnError: true }); }});
 
     jqUnit.asyncTest("Login with a valid username and password...", function() {
         browser.visit( harness.express.options.config.express.baseUrl + "content/login").then(function(error){
@@ -73,8 +73,15 @@ function runTests() {
                     // There should be no alerts
                     var alert = browser.window.$(".alert");
                     jqUnit.assertNotUndefined("There should be an alert...", alert.html());
+                    if (alert.html()) {
+                        jqUnit.assertTrue("The alert should have content.", alert.html().trim().length > 0);
+                    }
                 });
         });
+    });
+
+    jqUnit.onAllTestsDone.addListener(function() {
+        harness.stop();
     });
 }
 

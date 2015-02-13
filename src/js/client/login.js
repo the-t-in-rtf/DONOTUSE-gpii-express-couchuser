@@ -33,7 +33,7 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        that.templates.replaceWith(that.locate("message"), that.model.templates.error, message);
+        that.templates.html(that.locate("message"), that.model.templates.error, { "message": message });
     };
 
     login.displayReceipt = function(that, responseData, textStatus, jqXHR) {
@@ -42,13 +42,13 @@
             that.applier.change("user", jsonData.user);
 
             that.locate("form").hide();
-            that.templates.replaceWith(that.locate("message"), that.model.templates.success, "You are now logged in as " + that.model.user.name + ".");
+            that.templates.html(that.locate("message"), that.model.templates.success, { message: "You are now logged in as " + that.model.user.name + "." });
 
             // Anything that should refresh on login should bind to this event.
             that.events.login.fire();
         }
         else {
-            that.templates.replaceWith(that.locate("message"), that.model.templates.error, jsonData.message);
+            that.templates.html(that.locate("message"), that.model.templates.error, { message: jsonData.message });
         }
     };
 

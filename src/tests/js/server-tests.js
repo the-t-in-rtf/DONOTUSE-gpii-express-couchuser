@@ -26,7 +26,7 @@ function isSaneResponse(jqUnit, error, response, body, statusCode) {
 require("./test-harness.js");
 
 function runTests() {
-    jqUnit.module("Testing /api/user directly (no client side code)...");
+    jqUnit.module("Testing /api/user directly (no client side code)...",  { "setup": function() { harness.smtp.reset();} });
 
     jqUnit.asyncTest("Testing full login/logout cycle...", function() {
         var jar = request.jar();
@@ -168,7 +168,7 @@ function runTests() {
             var content = fs.readFileSync(that.model.messageFile);
 
             // Get the verification code and continue the verification process
-            var verificationCodeRegexp = new RegExp("api/user/verify/([a-z0-9-]+)", "i");
+            var verificationCodeRegexp = new RegExp("content/verify/([a-z0-9-]+)", "i");
             var matches = content.toString().match(verificationCodeRegexp);
 
             jqUnit.assertNotNull("There should be a verification code in the email sent to the user.", matches);
@@ -351,8 +351,12 @@ function runTests() {
             jqUnit.assertFalse("The response should not be 'ok'.", data.ok);
         });
     });
+
+    jqUnit.onAllTestsDone.addListener(function() {
+        harness.stop();
+    });
 };
 
 // Launch all servers and then start the tests above.
 var harness = gpii.express.couchuser.tests.harness({});
-harness.start(runTests);
+harness.start(function() { runTests(); });

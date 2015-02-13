@@ -1,7 +1,7 @@
 // A front-end component to provide meaningful feedback when users verify their accounts using /api/user/verify/:code
 (function ($) {
     "use strict";
-    var namespace = "ctr.components.reset";
+    var namespace = "gpii.express.couchuser.frontend.verify";
     var verify     = fluid.registerNamespace(namespace);
 
     // Try to log in and display the results
@@ -9,16 +9,15 @@
         if (event) { event.preventDefault(); }
 
         if (!that.model || !that.model.code) {
-            that.displayError(that, null, null, "<p>Cannot continue without a verification code.  Please check your email for a verification link or contact a system administrator for assistance.</p>")
+            that.displayError(null, null, "<p>Cannot continue without a verification code.  Please check your email for a verification link or contact a system administrator for assistance.</p>");
+            return;
         }
         else {
             var settings = {
-                type:    "POST",
-                url:     that.options.apiUrl + "/verify",
+                type:    "GET",
+                url:     that.options.apiUrl + "/verify/" + that.model.code,
                 success: that.displayReceipt,
-                error:   that.displayError,
-                json:    true,
-                data: { "code": that.model.code }
+                error:   that.displayError
             };
 
             $.ajax(settings);
@@ -36,7 +35,7 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        templates.prepend(that.locate("form"),"common-error", message);
+        that.templates.html(that.locate("message"),"common-error", { message: message } );
     };
 
     verify.displayReceipt = function(that, responseData, textStatus, jqXHR) {
@@ -44,22 +43,16 @@
         if (jsonData && jsonData.ok) {
             that.applier.change("user",jsonData.user);
 
-            templates.replaceWith(that.locate("viewport"),"success", {message:"You have successfully reset your password."});
+            that.templates.html(that.locate("message"), "common-success", { message: "You have successfully verified your account." });
         }
         else {
-            templates.prependTo(that.locate("form"),"common-error", jsonData.message);
+            that.templates.html(that.locate("message"), "common-error", { message: jsonData.message });
         }
-    };
-
-    verify.refresh = function(that) {
-        templates.replaceWith(that.locate("viewport"),"reset-form", that.model);
-        that.events.markupLoaded.fire();
     };
 
     // We have to do this because templates need to be loaded before we initialize our own code.
     verify.init = function(that) {
-        templates.loadTemplates();
-        that.events.markupLoaded.fire();
+        that.templates.loadTemplates();
     };
 
     fluid.defaults(namespace, {
@@ -67,14 +60,18 @@
         model: {
             code: null
         },
+        components: {
+            templates: {
+                "type": "gpii.templates.hb.client"
+            }
+        },
         apiUrl: "/api/user",
         selectors: {
-            "viewport": ".reset-viewport",
-            "message":  ".reset-message",
+            "viewport": ".verify-viewport",
+            "message":  ".verify-message"
         },
         events: {
             "submit":       "preventable",
-            "refresh":      "preventable",
             "markupLoaded": "preventable"
         },
         invokers: {
@@ -99,13 +96,9 @@
                 "funcName": namespace + ".init",
                 "args":     "{that}"
             },
-            "markupLoaded": {
-                func: namespace + ".submit",
-                args: [ "{that}"]
-            },
-            "refresh": {
-                func: namespace + ".refresh",
-                args: [ "{that}"]
+            "{templates}.events.templatesLoaded": {
+                "funcName": namespace + ".submit",
+                "args":     "{that}"
             }
         }
     });

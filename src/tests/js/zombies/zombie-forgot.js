@@ -15,7 +15,7 @@ require("../test-harness.js");
 function runTests() {
     var browser;
 
-    jqUnit.module("End-to-end functional \"forgot password\" tests...", { "setup": function() { browser = Browser.create(); }});
+    jqUnit.module("End-to-end functional \"forgot password\" tests...", { "setup": function() { browser = Browser.create({ continueOnError: true });  harness.smtp.init(); }});
 
     jqUnit.asyncTest("Reset a user's password using the \"forgot password\" form...", function() {
         var timestamp = (new Date()).getTime();
@@ -162,6 +162,9 @@ function runTests() {
                             // There should be an alert
                             var alert = resetBrowser.window.$(".alert");
                             jqUnit.assertNotUndefined("There should be at least one alert...", alert.html());
+                            if (alert.html()) {
+                                jqUnit.assertTrue("The alert should have content.", alert.html().trim().length > 0);
+                            }
                         });
                 });
             }
@@ -219,6 +222,9 @@ function runTests() {
                     // There should be no alerts
                     var alert = browser.window.$(".alert");
                     jqUnit.assertNotUndefined("There should be an alert...", alert.html());
+                    if (alert.html()) {
+                        jqUnit.assertTrue("The alert should have content.", alert.html().trim().length > 0);
+                    }
                 });
         });
     });
@@ -246,8 +252,15 @@ function runTests() {
                     // There should be at least one alert
                     var alert = browser.window.$(".alert");
                     jqUnit.assertNotUndefined("There should be an alert...", alert.html());
+                    if (alert.html()) {
+                        jqUnit.assertTrue("The alert should have content.", alert.html().trim().length > 0);
+                    }
             });
         });
+    });
+
+    jqUnit.onAllTestsDone.addListener(function() {
+        harness.stop();
     });
 }
 

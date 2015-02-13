@@ -5,24 +5,27 @@
         {{>common-includes}}
 
         <!-- Bring in client library being tested -->
-        <script type="text/javascript" src="/js/client/signup.js"></script>
+        <script type="text/javascript" src="/js/client/verify.js"></script>
     </head>
     <body>
         <div class="row">
-            <div class="verify-viewport column small-offset-4 small-4"
-            <div class="verify-message loading">
-                <p>Please wait while we check your verification code...</p>
+            <div class="verify-viewport column small-offset-4 small-4">
+                <div class="verify-message">
+                    <p>Please wait while we check your verification code...</p>
+                </div>
             </div>
         </div>
 
         <script type="text/javascript">
             var verify = gpii.express.couchuser.frontend.verify("body", {
+                model: {
+                    "code": {{{jsonify req.params.code }}}
+                },
                 components: {
                     templates: {
                         options: {
                             "model": {
-                                "code": {{jsonify req.params.code }},
-                                "templateUrl": "/hbs",
+                                "templateUrl": "/hbs"
                             }
                         }
                     }

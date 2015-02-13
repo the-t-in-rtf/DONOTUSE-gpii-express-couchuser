@@ -46,12 +46,26 @@ harness.start = function(that, callback) {
     });
 };
 
+harness.stop = function(that, callback) {
+    that.smtp.stop(function() {
+        // TODO: reenable pouch once we figure out why it doesn't work with express-couchuser
+        //that.pouch.stop(function() {
+        that.express.stop(callback);
+        //});
+    });
+
+};
+
 var bowerDir        = path.resolve(__dirname, "../../../bower_components");
 var jsDir           = path.resolve(__dirname, "../../js");
 var mailTemplateDir = path.resolve(__dirname, "../templates");
 var modulesDir      = path.resolve(__dirname, "../../../node_modules");
 var userDataFile    = path.resolve(__dirname, "../data/users/users.json");
 var viewDir         = path.resolve(__dirname, "../views");
+
+
+// We randomize our settings to avoid problems with concurrency
+
 
 // TODO:  Figure out why our pouch instance doesn't work with express-couchuser, and change options.config.users in the express component below
 // For now, we use our local couch instance directly.
@@ -187,6 +201,10 @@ fluid.defaults(namespace, {
     "invokers": {
         "start": {
             "funcName": namespace + ".start",
+            "args": ["{that}", "{arguments}.0"]
+        },
+        "stop": {
+            "funcName": namespace + ".stop",
             "args": ["{that}", "{arguments}.0"]
         }
     }

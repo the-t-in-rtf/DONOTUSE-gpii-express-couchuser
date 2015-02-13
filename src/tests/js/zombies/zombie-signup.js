@@ -18,7 +18,7 @@ require("../test-harness.js");
 function runTests() {
     var browser;
 
-    jqUnit.module("End-to-end functional signup tests...", { "setup": function() { browser = Browser.create(); }});
+    jqUnit.module("End-to-end functional signup tests...", { "setup": function() { browser = Browser.create({ continueOnError: true }); harness.smtp.init(); } });
 
     jqUnit.asyncTest("Create and verify a new user...", function() {
         var timestamp = (new Date()).getTime();
@@ -114,14 +114,102 @@ function runTests() {
         });
     });
 
-    // TODO: Try to create a user with the same email address as an existing user
+    jqUnit.asyncTest("Try to create a user with the same address as an existing user...", function() {
+        var timestamp = (new Date()).getTime();
+        var username  = "user-" + timestamp;
+        var password  = "pass-" + timestamp;
+        var email     = "admin@localhost";
 
-    // TODO: Try to create a user with mismatching passwords
+        browser.visit(harness.express.options.config.express.baseUrl + "content/signup").then(function(error){
+            jqUnit.start();
+            isBrowserSane(jqUnit, browser);
+            jqUnit.stop();
 
-    // TODO: Use an invalid verification code
+            browser
+                .fill("username", username)
+                .fill("password", password)
+                .fill("confirm",  password)
+                .fill("email", email)
+                .pressButton("Sign Up", function() {
+                    jqUnit.start();
+
+                    var signupForm = browser.window.$(".signup-form");
+                    jqUnit.assertNotUndefined("There should be a signup form...", signupForm.html());
+                    jqUnit.assertEquals("The signup form should not be hidden...", "", signupForm.css("display"));
+
+                    var feedback = browser.window.$(".success");
+                    jqUnit.assertUndefined("There should not be a positive feedback message...", feedback.html());
+
+                    var alert = browser.window.$(".alert");
+                    jqUnit.assertNotUndefined("There should be an alert...", alert.html());
+                    if (alert.html()) {
+                        jqUnit.assertTrue("The alert should have content.", alert.html().trim().length > 0);
+                    }
+                });
+        });
+    });
+
+    jqUnit.asyncTest("Try to create a user with mismatching passwords...", function() {
+        var timestamp = (new Date()).getTime();
+        var username  = "user-" + timestamp;
+        var password  = "pass-" + timestamp;
+        var email     = "email-" + timestamp + "@localhost";
+
+        browser.visit(harness.express.options.config.express.baseUrl + "content/signup").then(function(error){
+            jqUnit.start();
+            isBrowserSane(jqUnit, browser);
+            jqUnit.stop();
+
+            browser
+                .fill("username", username)
+                .fill("password", password)
+                .fill("confirm",  password + "-different")
+                .fill("email", email)
+                .pressButton("Sign Up", function() {
+                    jqUnit.start();
+                    isBrowserSane(jqUnit, browser);
+
+                    // The signup form should be visible
+                    var signupForm = browser.window.$(".signup-form");
+                    jqUnit.assertNotUndefined("There should be a signup form...", signupForm.html());
+                    jqUnit.assertEquals("The signup form should be visible...", "", signupForm.css("display"));
+
+                    // A "success" message should not be visible
+                    var feedback = browser.window.$(".success");
+                    jqUnit.assertUndefined("There should not be a positive feedback message...", feedback.html());
+
+                    // There should be no alerts
+                    var alert = browser.window.$(".alert");
+                    jqUnit.assertNotUndefined("There should be an alert...", alert.html());
+                    if (alert.html()) {
+                        jqUnit.assertTrue("The alert should have content.", alert.html().trim().length > 0);
+                    }
+                });
+        });
+    });
+
+    jqUnit.asyncTest("Try to use an invalid verification code...", function() {
+        var timestamp = (new Date()).getTime();
+        browser.visit(harness.express.options.config.express.baseUrl + "content/verify/" + timestamp).then(function () {
+            jqUnit.start();
+            // A "success" message should not be visible
+            var feedback = browser.window.$(".success");
+            jqUnit.assertUndefined("There should not be a positive feedback message...", feedback.html());
+
+            // There should be at least one alert
+            var alert = browser.window.$(".alert");
+            jqUnit.assertNotUndefined("There should be an alert...", alert.html());
+            if (alert.html()) {
+                jqUnit.assertTrue("The alert should have content.", alert.html().trim().length > 0);
+            }
+        });
+    });
+
+    jqUnit.onAllTestsDone.addListener(function() {
+        harness.stop();
+    });
 }
 
 // Launch all servers and then start the tests above.
 var harness = gpii.express.couchuser.tests.harness({});
 harness.start(runTests);
-//harness.start();

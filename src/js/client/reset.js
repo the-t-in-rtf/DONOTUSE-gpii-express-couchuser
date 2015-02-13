@@ -27,7 +27,7 @@
         }
         // TODO:  Add support for password validation, using a module common to this and the signup form.
         else {
-            that.templates.prepend(that.locate("message"),"common-error", "The passwords you entered do not match.");
+            that.templates.html(that.locate("message"),"common-error", { message: "The passwords you entered do not match." });
         }
     };
 
@@ -42,7 +42,7 @@
             console.log("jQuery.ajax call returned meaningless jqXHR.responseText payload. Using 'errorThrown' instead.");
         }
 
-        that.templates.prepend(that.locate("message"),"common-error", message);
+        that.templates.html(that.locate("message"),"common-error", { message: message });
     };
 
     reset.displayReceipt = function(that, responseData, textStatus, jqXHR) {
@@ -51,10 +51,10 @@
             that.applier.change("user",jsonData.user);
             that.locate("form").hide();
 
-            that.templates.replaceWith(that.locate("message"),"success", {message:"You have successfully reset your password."});
+            that.templates.html(that.locate("message"),"success", { message:"You have successfully reset your password." });
         }
         else {
-            that.templates.replaceWith(that.locate("message"),"common-error", jsonData.message);
+            that.templates.html(that.locate("message"),"common-error", { message: jsonData.message });
         }
     };
 
